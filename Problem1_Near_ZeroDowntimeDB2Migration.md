@@ -82,21 +82,6 @@ flowchart TB
 
 ---
 
-## Current State Characteristics
-
-### High Availability
-- IBM TSA manages automatic failover between Primary and Standby nodes.
-- Virtual IP automatically switches during failover.
-- Standby node remains passive until takeover.
-### Disaster Recovery
-- DR server located in secondary site/region.
-- Asynchronous HADR replication used for DR workload.
-
-### Operational Risks
-- Large 8TB database increases migration complexity.
-- Rollback window is very small (15 minutes).
-- Data validation must ensure zero data inconsistency.
-- Application outage must remain below 30 minutes.
 
 ### Current Recovery Objectives
 | Metric | Current Design |
@@ -206,29 +191,267 @@ Expected failover duration:
 
 ---
 
-# Comparison with Existing On-Premises Design
+### Operational Risks
+- Large 8TB database increases migration complexity.
+- Rollback window is very small (15 minutes).
+- Data validation must ensure zero data inconsistency.
+- Application outage must remain below 30 minutes.
 
-| Existing On-Premises | AWS RDS for Db2 |
-|---|---|
-| Db2 HADR | AWS Managed Replication |
-| IBM TSA | AWS Managed Failover |
-| Virtual IP | RDS Endpoint |
-| Active-Passive Nodes | Multi-AZ Deployment |
-| DR Server | Cross-Region Snapshots |
-| Manual Cluster Management | Fully Managed Service |
-| OS Access | No OS Access |
+---
+# Step 1. Existing Environment Assessment
+
+## Capture Current Infrastructure
+
+### Infrastructure Details
+- Db2 version and fix pack
+- AIX version
+- CPU cores and memory
+- Filesystem type and allocation
+- Storage latency and throughput
+- Network bandwidth
+- Current HA/DR topology
+
+### Db2 Configuration
+- DB CFG
+- DBM CFG
+- Bufferpool configuration
+- Tablespace allocation
+- HADR configuration
+- Backup strategy
+- Maintenance scripts
+
+### Workload Assessment
+- Peak TPS
+- Peak connections
+- CPU utilization
+- IO latency
+- Bufferpool hit ratio
+- Database growth rate
+
+## Purpose
+Helps determine:
+- Correct AWS RDS sizing
+- Storage requirements
+- Autoscaling configuration
+- Migration throughput
+- CDC bandwidth requirements
 
 ---
 
-# Enterprise Migration Objectives Alignment
+# Step 2. Proposed AWS RDS for Db2 Architecture
 
-| Requirement | AWS Solution |
+## High Availability
+- AWS RDS Db2 Multi-AZ deployment
+- AWS managed synchronous replication
+- Automatic failover
+
+## Disaster Recovery
+- Cross-region automated snapshot replication
+- Point-in-Time Recovery (PITR)
+
+## Connectivity
+- Security Groups for application IPs
+- Dedicated replication network for CDC
+
+---
+
+# Step 3. Migration Strategy (Industry Standard)
+
+## Recommended Approach
+Use:
+- IBM InfoSphere CDC / Q Replication
+- Initial Full Load + Continuous CDC Replication
+
+## Why CDC?
+For 8TB OLTP databases:
+- Backup/restore alone causes long outage
+- CDC enables near-zero downtime
+- Continuous replication minimizes cutover window
+
+---
+
+# Step 4. Migration Phases
+
+## Phase 1 – Assessment and Planning
+- Capture source environment details
+- Validate application dependencies
+- Size AWS RDS instance
+- Define rollback plan
+- Define validation strategy
+
+---
+
+## Phase 2 – AWS Environment Build
+- Provision AWS RDS for Db2
+- Configure Multi-AZ
+- Configure backups and DR snapshots
+- Configure Security Groups
+- Configure monitoring and alerts
+
+---
+
+## Phase 3 – Initial Data Load
+- Perform full database export/load
+OR
+- Use CDC initial snapshot load
+
+## Goal
+Reduce remaining delta synchronization during cutover.
+
+---
+
+## Phase 4 – Continuous Replication
+- Enable IBM CDC replication
+- Replicate ongoing transactions continuously
+- Monitor replication latency
+
+## Important
+Use dedicated network bandwidth for CDC because:
+- 8TB OLTP generates heavy transaction logs
+- Prevent replication lag
+
+---
+
+## Phase 5 – Validation
+Perform:
+- Row count validation
+- Object validation
+- Checksum validation
+- Application connectivity testing
+- Performance benchmark testing
+
+## Goal
+Ensure 100% data integrity before cutover.
+
+---
+
+# Step 6. Cutover Execution (Downtime Window)
+
+## Planned Cutover Steps
+
+### Step 1
+Stop application writes.
+
+### Step 2
+Allow CDC replication to reach zero lag.
+
+### Step 3
+Final validation check.
+
+### Step 4
+Redirect application connection strings to AWS RDS endpoint.
+
+### Step 5
+Perform application smoke testing.
+
+### Expected Downtime
+Less than 30 minutes.
+
+---
+
+# Step 7. Rollback Strategy
+
+## Rollback Window
+15 minutes.
+
+## Rollback Approach
+- Keep source Db2 environment active during validation.
+- Preserve transaction logs.
+- Redirect application back to source if issues occur.
+
+## Rollback Trigger Examples
+- Application failures
+- Performance degradation
+- Data validation mismatch
+- Connectivity failures
+
+---
+
+# Step 8. Post Migration Activities
+
+- Enable automated backups
+- Configure CloudWatch monitoring
+- Validate Multi-AZ failover
+- Performance tuning
+- Enable storage autoscaling
+- Decommission old environment after signoff
+
+---
+## Note : Points to keep in consideration when handling large amount of data.
+# Enterprise Best Practices
+
+| Area | Best Practice |
 |---|---|
-| Maximum 30 Minutes Downtime | Controlled Cutover |
-| Zero Data Loss | Multi-AZ Synchronous Replication |
-| Rollback Within 15 Minutes | Retain Source Environment Until Validation |
-| 100% Data Validation | Pre/Post Migration Validation Scripts |
-| High Availability | AWS Multi-AZ |
-| Disaster Recovery | Cross-Region Snapshot Backup |
+| Migration Method | CDC-based near-zero downtime migration |
+| HA | AWS RDS Multi-AZ |
+| DR | Cross-region snapshot replication |
+| Validation | Automated row count + checksum validation |
+| Rollback | Keep source active until signoff |
+| Monitoring | CloudWatch + Enhanced Monitoring |
+| Security | Security Groups + Encryption |
+| Sizing | Peak workload-based sizing |
+| Storage | Autoscaling enabled |
+| Connectivity | Dedicated CDC network |
 
+---
+
+# Key Industry Recommendations
+
+## Avoid
+- Big-bang offline migrations
+- Backup/restore-only strategy for 8TB OLTP
+- Direct production cutover without CDC
+- Decommissioning source immediately
+
+## Recommended
+- CDC replication
+- Parallel validation
+- Dedicated migration network
+- Multiple dress rehearsals
+- Automated validation scripts
+- Controlled rollback plan
+
+---
+
+# Final Proposed Architecture
+
+```mermaid
+flowchart TB
+
+    APP[Application Servers]
+
+    subgraph AWS1["AWS Primary Region"]
+        direction TB
+
+        ENDPOINT["RDS Endpoint"]
+
+        subgraph MAZ["Amazon RDS for Db2 - Multi AZ"]
+            direction LR
+
+            PRI["Primary RDS Db2 Instance"]
+
+            STBY["AWS Managed Standby Instance"]
+        end
+    end
+
+    subgraph AWS2["AWS DR Region"]
+        direction TB
+
+        SNAP["Cross-Region Snapshot Backups"]
+    end
+
+    SRC["IBM Db2 on AIX\nSource Database"]
+
+    SRC -->|IBM CDC Replication| PRI
+
+    APP --> ENDPOINT
+
+    ENDPOINT --> PRI
+
+    PRI -->|Synchronous Replication| STBY
+
+    PRI -->|Automated Snapshot Copy| SNAP
+
+    STBY -.->|Automatic AWS Failover| PRI
+```
 
