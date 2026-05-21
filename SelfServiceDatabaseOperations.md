@@ -307,6 +307,38 @@ We can use Flyway.
 5. Guardium  tool is one of the widly adopted tool for compliance to capture the authorized and unauthized access on execution of the DML operations.
 
 ---
+# Step 5: Rollback Strategy
+
+Each deployment must include rollback capability.
+
+---
+
+## Rollback Requirements
+
+1. Rollback SQL mandatory
+2. Point-in-time recovery readiness
+3. Backup validation before deployment
+4. Rollback testing in lower environments
+
+---
+
+## Rollback Architecture
+
+```mermaid
+flowchart LR
+
+A[Deployment Failure] --> B[Pipeline Stops]
+
+B --> C[Rollback Triggered]
+
+C --> D[Restore Previous State]
+
+D --> E[Capture Audit Logs]
+
+E --> F[Notify DBA Team]
+```
+
+---
 
 # Net-Net Workflow
 
