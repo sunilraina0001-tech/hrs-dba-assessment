@@ -2,7 +2,7 @@
 
 | Document Information | Details |
 |---|---|
-| Document Version | v1.0 |
+| Document Version | Draft |
 | Prepared By | Sunil Raina |
 | Date | 21 May 2026 |
 | Assessment | HRS DBA Technical Assessment |
