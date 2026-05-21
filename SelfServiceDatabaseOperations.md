@@ -320,8 +320,85 @@ Each deployment must include rollback capability.
 3. Backup validation before deployment
 4. Rollback testing in lower environments
 
+Learnings:
+1. GitHub Action can be used , it executes the transaction in controlled manner:
+   BEGIN;
+   update SCHEMA.TABLE
+   SET status="WORKING"
+   WHERE DEPT_NAME="DBA";
+   -- Validate Query:
+   Commit
+   Note: If validate fails rollback.
 ---
+## Example:
+```mermaid
+flowchart TD
 
+A[Developer Submits SQL Change] --> B[GitHub Pull Request]
+
+B --> C[GitHub Actions Triggered]
+
+C --> D[Automated Validation Checks]
+
+D --> D1[SQL Syntax Validation]
+D --> D2[Check WHERE Clause]
+D --> D3[Restricted DELETE/UPDATE Validation]
+D --> D4[Rollback Script Validation]
+D --> D5[Schema Drift Validation]
+D --> D6[DB2 Test Execution]
+
+D1 --> E{Validation Passed?}
+D2 --> E
+D3 --> E
+D4 --> E
+D5 --> E
+D6 --> E
+
+E -- No --> F[Pipeline Failed]
+
+F --> G[Automatic Rollback]
+G --> G1[ROLLBACK Transaction]
+G --> G2[Restore Backup Table]
+G --> G3[Notify DBA & Developer]
+
+E -- Yes --> H[DBA Approval Gate]
+
+H --> I{Approved?}
+
+I -- No --> J[Deployment Rejected]
+
+I -- Yes --> K[Pre-Deployment Backup]
+
+K --> K1[Create Recovery Table]
+K --> K2[Capture Before Image Data]
+
+K --> L[Execute DML/DDL Changes]
+
+L --> M[Post Deployment Validation]
+
+M --> M1[Row Count Validation]
+M --> M2[Checksum Validation]
+M --> M3[Application Smoke Test]
+M --> M4[Performance Validation]
+
+M1 --> N{Validation Successful?}
+M2 --> N
+M3 --> N
+M4 --> N
+
+N -- No --> O[Execute Rollback Workflow]
+
+O --> O1[Execute Rollback SQL]
+O --> O2[Restore Backup Data]
+O --> O3[DB2 Transaction Rollback]
+O --> O4[Send Incident Notification]
+
+N -- Yes --> P[COMMIT Transaction]
+
+P --> Q[Update Audit Logs]
+
+Q --> R[Deployment Completed Successfully]
+```
 ## Rollback Architecture
 
 ```mermaid
