@@ -52,8 +52,17 @@ The solution is designed to achieve:
 | Data Validation | 100% Data Verification Required |
 
 ---
+# Assumptions
 
-## Assume this is existing Architecture Diagram
+- Source and target Db2 versions are compatible for migration.
+- Sufficient network bandwidth exists between on-premises and AWS.
+- IBM CDC/Q Replication licensing is available if selected.
+- Application connection strings can be modified during cutover.
+- AWS RDS for Db2 supports required database features and workload sizing.
+- Business-approved migration windows are available.
+- Production and warehouse workloads are isolated.
+
+## Assume this is an existing Architecture Diagram
 
 ```mermaid
 flowchart TB
@@ -477,6 +486,18 @@ Source Db2 <----> AWS RDS for Db2
 - Automated validation scripts
 - Controlled rollback plan
 ---
+# Migration Risks and Mitigation
+
+| Risk | Mitigation |
+|---|---|
+| CDC replication lag | Dedicated replication bandwidth and monitoring |
+| Large data transfer duration | Parallel migration streams and compression |
+| Performance degradation after cutover | Pre-cutover performance benchmarking |
+| Rollback complexity | Temporary bi-directional CDC replication |
+| Application connectivity failures | Pre-validation of endpoints and security rules |
+| Storage growth during migration | Enable storage autoscaling |
+| Query performance regression | Post-migration workload tuning |
+| Network bottlenecks | Dedicated migration/replication network |
 # Conclusion
 
 The proposed migration approach provides an enterprise-grade strategy for migrating a mission-critical 8TB Db2 OLTP workload from IBM AIX to AWS RDS for Db2 with near-zero downtime.
