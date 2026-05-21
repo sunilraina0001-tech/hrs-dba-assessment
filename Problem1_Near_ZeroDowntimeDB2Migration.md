@@ -12,6 +12,21 @@
 | Source Environment | IBM Db2 on AIX |
 | Target Environment | AWS RDS for Db2 |
 | Objective | Design a highly available, near-zero downtime migration architecture for an 8TB+ transactional Db2 database workload |
+# Executive Summary
+
+The proposed solution migrates the existing 8TB IBM Db2 on AIX OLTP environment to AWS RDS for Db2 using a near-zero downtime migration approach based on continuous replication technologies such as IBM Q Replication or IBM CDC.
+
+The target architecture leverages:
+- AWS RDS Multi-AZ for High Availability
+- Cross-region snapshot replication for Disaster Recovery
+- Continuous CDC replication for minimal downtime cutover
+- Temporary bi-directional replication for rapid rollback capability
+
+The solution is designed to achieve:
+- Less than 30 minutes application downtime
+- Zero data loss
+- Rollback within 15 minutes
+- 100% data validation before production signoff
 
 ## Existing Infrastructure Architecture
 
@@ -198,7 +213,7 @@ Expected failover duration:
 - Application outage must remain below 30 minutes.
 
 ---
-# Step 1. Existing Environment Assessment
+# Step 1. Source Environment Assessment
 
 ## Capture Current Infrastructure
 
@@ -270,7 +285,7 @@ For 8TB OLTP databases:
 
 ---
 
-# Step 4. Migration Phases
+# Step 4. Migration Execution Plan
 
 ## Phase 1 – Assessment and Planning
 - Capture source environment details
@@ -369,32 +384,23 @@ Bi-directional CDC allows:
 - Continuous synchronization between source and target environments.
 - Rapid rollback without requiring full database restore.
 - Minimal data loss during rollback scenarios.
-## Note: Below are the list of Replication tools which industry use for Large Dataset Migrations:
-Example:
-1. IBM Q Replication
-## Challenges
-- More complex setup
-- Requires IBM MQ infrastructure
-- Higher licensing and operational cost
-2. IBM CDC (InfoSphere CDC)
-## Limitations
-- Slightly higher latency than Q Replication
-- May struggle under extremely high TPS workloads compared to Q Replication
-3. AWS Database Migration Service (AWS DMS)
-## Limitations
-- Not ideal for extremely high TPS systems
-- Replication lag possible under heavy workloads
-- Limited compared to Q Replication for enterprise Db2 workloads
+# Replication Technology Considerations
 
-# Enterprise Recommendation
+For large enterprise OLTP databases (8TB+), the following replication technologies are commonly used:
 
-## Preferred Enterprise Choice
-For very large Db2 transactional systems:
-- IBM Q Replication is usually preferred for:
-  - high throughput
-  - low latency
-  - enterprise HA-grade replication
+| Technology | Use Case | Consideration |
+|---|---|---|
+| IBM Q Replication | High TPS, enterprise-grade low latency replication | Preferred for mission-critical Db2 workloads |
+| IBM CDC | Near-zero downtime migrations | Easier operational management |
+| AWS DMS | Cost optimized migrations | Suitable for moderate workloads |
+| Kafka Integration | Event streaming and analytics | Used in cloud-native architectures |
 
+## Recommended Approach
+For this migration, IBM Q Replication or IBM CDC is recommended due to:
+- High transaction volume
+- Near-zero downtime requirement
+- Enterprise rollback requirements
+- Low replication latency needs
 ## Cost Optimized Choice
 For moderate workloads:
 - IBM CDC or AWS DMS may be sufficient.
@@ -470,6 +476,6 @@ Source Db2 <----> AWS RDS for Db2
 - Multiple dress rehearsals
 - Automated validation scripts
 - Controlled rollback plan
-
 ---
+
 
