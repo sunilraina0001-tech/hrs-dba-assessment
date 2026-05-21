@@ -369,6 +369,39 @@ Bi-directional CDC allows:
 - Continuous synchronization between source and target environments.
 - Rapid rollback without requiring full database restore.
 - Minimal data loss during rollback scenarios.
+## Note: Below are the list of Replication tools which industry use for Large Dataset Migrations:
+Example:
+1. IBM Q Replication
+## Challenges
+- More complex setup
+- Requires IBM MQ infrastructure
+- Higher licensing and operational cost
+2. IBM CDC (InfoSphere CDC)
+## Limitations
+- Slightly higher latency than Q Replication
+- May struggle under extremely high TPS workloads compared to Q Replication
+3. AWS Database Migration Service (AWS DMS)
+## Limitations
+- Not ideal for extremely high TPS systems
+- Replication lag possible under heavy workloads
+- Limited compared to Q Replication for enterprise Db2 workloads
+
+# Enterprise Recommendation
+
+## Preferred Enterprise Choice
+For very large Db2 transactional systems:
+- IBM Q Replication is usually preferred for:
+  - high throughput
+  - low latency
+  - enterprise HA-grade replication
+
+## Cost Optimized Choice
+For moderate workloads:
+- IBM CDC or AWS DMS may be sufficient.
+
+## Modern Cloud-Native Architecture
+Organizations adopting event streaming and analytics often integrate:
+- CDC + Kafka + AWS services.
 
 ---
 
@@ -391,8 +424,6 @@ Source Db2 <----> AWS RDS for Db2
 2. Allow reverse CDC synchronization to complete.
 3. Redirect application back to source Db2 on AIX.
 4. Resume production operations on source system.
-
----
 
 ---
 
@@ -441,46 +472,4 @@ Source Db2 <----> AWS RDS for Db2
 - Controlled rollback plan
 
 ---
-
-# Final Proposed Architecture
-
-```mermaid
-flowchart TB
-
-    APP[Application Servers]
-
-    subgraph AWS1["AWS Primary Region"]
-        direction TB
-
-        ENDPOINT["RDS Endpoint"]
-
-        subgraph MAZ["Amazon RDS for Db2 - Multi AZ"]
-            direction LR
-
-            PRI["Primary RDS Db2 Instance"]
-
-            STBY["AWS Managed Standby Instance"]
-        end
-    end
-
-    subgraph AWS2["AWS DR Region"]
-        direction TB
-
-        SNAP["Cross-Region Snapshot Backups"]
-    end
-
-    SRC["IBM Db2 on AIX\nSource Database"]
-
-    SRC -->|IBM CDC Replication| PRI
-
-    APP --> ENDPOINT
-
-    ENDPOINT --> PRI
-
-    PRI -->|Synchronous Replication| STBY
-
-    PRI -->|Automated Snapshot Copy| SNAP
-
-    STBY -.->|Automatic AWS Failover| PRI
-```
 
