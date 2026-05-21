@@ -1,4 +1,4 @@
-# Problem 2: DBSTAT Data Warehouse Migration Strategy
+# Problem 1 - Part 2: DBSTAT Data Warehouse Migration Strategy
 
 # Enterprise Data Warehouse Migration – 40TB DBSTAT Warehouse
 
@@ -86,7 +86,81 @@ Unlike the OLTP production database:
   - Minimal reporting disruption
 
 ---
+# Migration Execution Plan
+# Why Backup/Restore Preferred Over Continuous Replication for 40TB Warehouse
 
+The migration strategy for the 40TB DBSTAT warehouse differs from the OLTP production database because the workload and business requirements are different.
+
+## Production OLTP Database Requirements
+- Maximum 30-minute downtime
+- Zero data loss requirement
+- High transaction volume
+- Near real-time synchronization required
+
+This requires:
+- IBM Q Replication
+- IBM CDC
+- Continuous replication approach
+
+---
+
+## DBSTAT Warehouse Requirements
+- 48-hour downtime acceptable
+- Primarily analytical/reporting workload
+- Lower transactional sensitivity
+- Large historical dataset movement
+
+---
+
+## Why Backup/Restore is Preferred
+
+### Faster Large Dataset Migration
+For 40TB warehouse databases:
+- Native Db2 backup/restore is significantly faster than row-level CDC synchronization.
+- Backup/restore transfers data at storage/block level.
+
+### Lower Operational Complexity
+Continuous replication for massive historical warehouse datasets may:
+- Increase replication overhead
+- Generate large CDC lag
+- Increase network utilization
+- Impact analytical workloads
+
+### Better Fit for Analytical Workloads
+The warehouse workload is primarily:
+- Read-heavy
+- Batch-oriented
+- Reporting focused
+
+which makes bulk migration more efficient than continuous transactional replication during initial migration.
+
+---
+
+# Recommended Enterprise Pattern
+
+## Phase 1 – Initial Bulk Migration
+Use:
+- Native compressed backup/restore
+- Parallel restore streams
+- AWS Snowball if required
+
+to migrate the historical 40TB dataset efficiently.
+
+---
+
+## Phase 2 – Post Migration Replication
+After migration completion:
+
+```text
+Production AWS RDS Db2 --> DBSTAT Warehouse AWS RDS Db2
+```
+
+using:
+- IBM Q Replication
+- IBM CDC
+- Kafka , can be explored as well.
+
+This enables ongoing near real-time reporting synchronization while keeping OLTP and analytical workloads isolated.
 # Recommended Enterprise Migration Approach
 
 ## Preferred Strategy
