@@ -133,7 +133,50 @@ The warehouse workload is primarily:
 - Reporting focused
 
 which makes bulk migration more efficient than continuous transactional replication during initial migration.
+## Cost and Transfer Considerations
 
+Although native backup/restore is the preferred approach for large warehouse migrations, the following factors must be evaluated for a 40TB dataset:
+
+| Consideration | Impact |
+|---|---|
+| Backup storage requirement | Temporary storage cost for compressed backups |
+| Network transfer duration | Large data movement may exceed migration window |
+| Compression ratio | Impacts transfer size and restore duration |
+| Staging storage | Additional storage may be required during migration |
+| AWS ingress/storage cost | Impacts overall migration cost |
+
+---
+
+## Enterprise Decision Factors
+
+The final migration approach should be selected based on:
+
+- Available network bandwidth
+- Compression efficiency
+- Migration window constraints
+- Cost optimization requirements
+- Operational complexity
+- Existing backup infrastructure
+
+---
+
+# Alternative Enterprise Approaches
+
+| Approach | When Preferred |
+|---|---|
+| Native Backup/Restore | Fastest bulk movement with sufficient bandwidth |
+| AWS Snowball | Limited network bandwidth or very large transfer size |
+| Parallel Export/Import | Selective or phased migration |
+| CDC-Based Initial Load | When continuous synchronization required |
+
+---
+
+# Recommended Approach for This Scenario
+
+For the 40TB DBSTAT warehouse:
+- Native compressed backup/restore remains the preferred primary approach if bandwidth and storage costs are acceptable.
+- AWS Snowball can be considered if network transfer duration becomes a bottleneck.
+- Post migration synchronization should still use CDC/Q Replication from Production OLTP to Warehouse.
 ---
 
 # Recommended Enterprise Pattern
