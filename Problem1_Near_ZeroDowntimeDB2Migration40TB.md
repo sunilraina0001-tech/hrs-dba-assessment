@@ -27,7 +27,16 @@
 | Recovery Objective | Restore analytical services quickly |
 
 ---
+# Assumptions
 
+- Source and target Db2 versions are compatible for migration.
+- Sufficient network bandwidth exists between on-premises and AWS.
+- IBM CDC/Q Replication licensing is available if selected.
+- Application connection strings can be modified during cutover.
+- AWS RDS for Db2 supports required database features and workload sizing.
+- Business-approved migration windows are available.
+- Production and warehouse workloads are isolated.
+  
 # Existing Architecture Assumption
 
 ## Current Environment
@@ -74,7 +83,16 @@ flowchart TB
 ```
 
 ---
+# Migration Rehearsal Strategy
 
+Before production migration:
+- Perform at least one full dress rehearsal migration.
+- Validate migration duration.
+- Validate CDC synchronization timing.
+- Validate rollback procedures.
+- Benchmark application and reporting performance.
+- Document operational runbooks for cutover activities.
+- 
 # Recommended Migration Strategy
 
 Unlike the OLTP production database:
@@ -315,6 +333,18 @@ flowchart LR
 ```
 
 ---
+# Monitoring and Observability
+
+The following monitoring capabilities should be enabled:
+
+- AWS CloudWatch Monitoring
+- Enhanced RDS Monitoring
+- Replication latency monitoring
+- Storage autoscaling alerts
+- CPU and memory threshold alerts
+- Connection utilization alerts
+- Backup and snapshot monitoring
+- Query performance monitoring
 
 # Why Separate Warehouse Replication?
 
@@ -381,6 +411,18 @@ Prevent heavy warehouse migration workload from affecting production OLTP operat
 - Post-migration performance tuning
 
 ---
+# Migration Risks and Mitigation
+
+| Risk | Mitigation |
+|---|---|
+| CDC replication lag | Dedicated replication bandwidth and monitoring |
+| Large data transfer duration | Parallel migration streams and compression |
+| Performance degradation after cutover | Pre-cutover performance benchmarking |
+| Rollback complexity | Temporary bi-directional CDC replication |
+| Application connectivity failures | Pre-validation of endpoints and security rules |
+| Storage growth during migration | Enable storage autoscaling |
+| Query performance regression | Post-migration workload tuning |
+| Network bottlenecks | Dedicated migration/replication network |
 
 # Conclusion
 
