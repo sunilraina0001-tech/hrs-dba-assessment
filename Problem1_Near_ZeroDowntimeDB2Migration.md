@@ -88,7 +88,24 @@ flowchart TB
 - IBM TSA manages automatic failover between Primary and Standby nodes.
 - Virtual IP automatically switches during failover.
 - Standby node remains passive until takeover.
+### Disaster Recovery
+- DR server located in secondary site/region.
+- Asynchronous HADR replication used for DR workload.
 
+### Operational Risks
+- Large 8TB database increases migration complexity.
+- Rollback window is very small (15 minutes).
+- Data validation must ensure zero data inconsistency.
+- Application outage must remain below 30 minutes.
+
+### Current Recovery Objectives
+| Metric | Current Design |
+|---|---|
+| RPO | Near Zero |
+| RTO | Less than 5 Minutes |
+| Failover Type | Automatic |
+| DR Replication | Asynchronous |
+| Local Replication | Synchronous |
 # Proposed AWS RDS for Db2 Target Architecture
 
 ## Target State Design
@@ -214,21 +231,4 @@ Expected failover duration:
 | High Availability | AWS Multi-AZ |
 | Disaster Recovery | Cross-Region Snapshot Backup |
 
-### Disaster Recovery
-- DR server located in secondary site/region.
-- Asynchronous HADR replication used for DR workload.
 
-### Operational Risks
-- Large 8TB database increases migration complexity.
-- Rollback window is very small (15 minutes).
-- Data validation must ensure zero data inconsistency.
-- Application outage must remain below 30 minutes.
-
-### Current Recovery Objectives
-| Metric | Current Design |
-|---|---|
-| RPO | Near Zero |
-| RTO | Less than 5 Minutes |
-| Failover Type | Automatic |
-| DR Replication | Asynchronous |
-| Local Replication | Synchronous |
