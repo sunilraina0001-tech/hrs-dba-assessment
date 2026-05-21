@@ -38,37 +38,46 @@
 
 ---
 
-## Assume ths is existing Architecture Diagram
+## Assume this is existing Architecture Diagram
 
 ```mermaid
-flowchart LR
+flowchart TB
 
     APP[Application Servers]
 
     subgraph DC1["Primary Data Center"]
+        direction LR
+
         VIP[Virtual IP / Service Endpoint]
 
-        subgraph TSA1["IBM TSA Cluster"]
-            P1["Active Node\nDb2 Primary"]
-            S1["Passive Node\nDb2 Standby"]
+        subgraph TSA["IBM TSA Cluster"]
+            direction TB
+
+            P1["Active Node<br/>Db2 Primary"]
+
+            S1["Passive Node<br/>Db2 Standby"]
         end
     end
 
-    subgraph DR["Disaster Recovery Site"]
-        DR1["Db2 DR Server\nHADR Remote Standby"]
+    subgraph DRSITE["Disaster Recovery Site"]
+        direction TB
+
+        DR1["Db2 DR Server<br/>HADR Remote Standby"]
     end
 
     APP --> VIP
     VIP --> P1
 
     P1 -->|Synchronous HADR| S1
+
     P1 -->|Asynchronous HADR| DR1
 
-    TSA1 -. Automatic Failover .-> S1
+    TSA -. Automatic Failover .-> S1
 
     style P1 fill:#d4f4dd
     style S1 fill:#fdf0d5
     style DR1 fill:#e1ecf4
+    style VIP fill:#fce1e4
 ```
 
 ---
