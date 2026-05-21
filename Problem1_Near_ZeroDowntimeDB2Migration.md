@@ -20,7 +20,7 @@
 - High Availability: TSA-based Automatic Failover
 - Assuming current (DB2 on AIX) Topology:
   - 1 Primary Database Server
-  - 1 Local Standby Server
+  - 1 Standby Server
   - 1 Disaster Recovery (DR) Server
 - Operating System: IBM AIX
 - Database: IBM Db2
