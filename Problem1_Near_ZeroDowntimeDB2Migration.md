@@ -89,6 +89,131 @@ flowchart TB
 - Virtual IP automatically switches during failover.
 - Standby node remains passive until takeover.
 
+# Proposed AWS RDS for Db2 Target Architecture
+
+## Target State Design
+The proposed AWS architecture replaces traditional Db2 HADR + TSA clustering with AWS managed High Availability using Multi-AZ deployment and Disaster Recovery using Cross-Region Snapshot Backups.
+
+AWS RDS for Db2 does not expose conventional Db2 HADR administration, TSA, Pacemaker, or OS-level clustering. High availability and failover are fully managed by AWS.
+
+---
+
+## AWS Target Architecture Diagram
+
+```mermaid
+flowchart TB
+
+    APP[Application Servers]
+
+    subgraph AWS1["AWS Primary Region"]
+        direction TB
+
+        ENDPOINT["RDS Endpoint"]
+
+        subgraph MAZ["Amazon RDS for Db2 - Multi AZ"]
+            direction LR
+
+            PRI["Primary RDS Db2 Instance"]
+
+            STBY["AWS Managed Standby Instance"]
+        end
+    end
+
+    subgraph AWS2["AWS DR Region"]
+        direction TB
+
+        SNAP["Cross-Region Snapshot Backups"]
+    end
+
+    APP --> ENDPOINT
+
+    ENDPOINT --> PRI
+
+    PRI -->|Synchronous Replication| STBY
+
+    PRI -->|Automated Snapshot Copy| SNAP
+
+    STBY -.->|Automatic AWS Failover| PRI
+
+    style PRI fill:#d4f4dd
+    style STBY fill:#fdf0d5
+    style SNAP fill:#e1ecf4
+    style ENDPOINT fill:#fce1e4
+```
+
+---
+
+# Proposed Architecture Components
+
+| Component | Purpose |
+|---|---|
+| Amazon RDS for Db2 Primary | Production database workload |
+| Multi-AZ Standby | High availability within AWS region |
+| RDS Endpoint | Automatic connection redirection during failover |
+| Cross-Region Snapshot Backup | Disaster recovery and regional protection |
+| AWS Managed Failover | Automatic failover without TSA/Pacemaker |
+
+---
+
+# High Availability Design
+
+## Multi-AZ Deployment
+- AWS automatically maintains synchronous standby replica in another Availability Zone.
+- Automatic failover handled by AWS.
+- Application reconnects using same RDS endpoint.
+- No manual takeover commands required.
+
+## Automatic Failover
+During primary failure:
+1. AWS detects failure.
+2. Standby promoted automatically.
+3. DNS endpoint redirected.
+4. Application reconnects automatically.
+
+Expected failover duration:
+- Typically 60–120 seconds depending on workload and transaction recovery.
+
+---
+
+# Disaster Recovery Design
+
+## Cross-Region Snapshot Strategy
+- Automated snapshots copied to secondary AWS region.
+- Provides regional disaster recovery capability.
+- Supports restoration during complete regional outage.
+
+## DR Recovery Process
+1. Restore latest snapshot in DR region.
+2. Attach application endpoint.
+3. Resume application services.
+
+---
+
+# Comparison with Existing On-Premises Design
+
+| Existing On-Premises | AWS RDS for Db2 |
+|---|---|
+| Db2 HADR | AWS Managed Replication |
+| IBM TSA | AWS Managed Failover |
+| Virtual IP | RDS Endpoint |
+| Active-Passive Nodes | Multi-AZ Deployment |
+| DR Server | Cross-Region Snapshots |
+| Manual Cluster Management | Fully Managed Service |
+| OS Access | No OS Access |
+
+---
+
+# Enterprise Migration Objectives Alignment
+
+| Requirement | AWS Solution |
+|---|---|
+| Maximum 30 Minutes Downtime | Controlled Cutover |
+| Zero Data Loss | Multi-AZ Synchronous Replication |
+| Rollback Within 15 Minutes | Retain Source Environment Until Validation |
+| 100% Data Validation | Pre/Post Migration Validation Scripts |
+| High Availability | AWS Multi-AZ |
+| Disaster Recovery | Cross-Region Snapshot Backup |
+
 ### Disaster Recovery
 - DR server located in secondary site/region.
 - Asynchronous HADR replication used for DR workload.
