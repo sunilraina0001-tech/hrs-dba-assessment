@@ -298,7 +298,13 @@ We can use Flyway.
 
 ## Note
 
-Liquibase can also be explored as an alternative to Flyway.
+1. Liquibase can also be explored as an alternative to Flyway.
+2. DB2 also has the native utility db2audit which captures DML, and Data movement utilities
+3. DMC - Is another Web-based tool (Data Management Console) which captures below listed item in wider scale:
+   a. Enable activity event Monitors
+   b. It captures DML , DCL, Utilities like (reorg, reorgchk, runstats, backups etc)
+4. Home written scripts using Bash/Python can be written to do capture these work streams.
+5. Guardium  tool is one of the widly adopted tool for compliance to capture the authorized and unauthized access on execution of the DML operations.
 
 ---
 
