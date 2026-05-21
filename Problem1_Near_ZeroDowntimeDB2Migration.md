@@ -350,20 +350,49 @@ Less than 30 minutes.
 ---
 
 # Step 7. Rollback Strategy
+## Recommended Enterprise Rollback Approach
 
-## Rollback Window
-15 minutes.
+To achieve fast rollback capability within 15 minutes, the migration design keeps the source IBM Db2 on AIX environment active during the stabilization window.
 
-## Rollback Approach
-- Keep source Db2 environment active during validation.
-- Preserve transaction logs.
-- Redirect application back to source if issues occur.
+## Proposed Rollback Design
+- Keep source Db2 production environment online.
+- Preserve archive and active transaction logs.
+- Configure IBM CDC in bi-directional replication mode temporarily during cutover validation.
+- Redirect application traffic using controlled DNS/connection string changes.
 
-## Rollback Trigger Examples
-- Application failures
-- Performance degradation
-- Data validation mismatch
-- Connectivity failures
+---
+
+# Bi-Directional CDC Strategy
+
+## Purpose
+Bi-directional CDC allows:
+- Continuous synchronization between source and target environments.
+- Rapid rollback without requiring full database restore.
+- Minimal data loss during rollback scenarios.
+
+---
+
+# Rollback Workflow
+
+## During Migration
+```text
+Source Db2 on AIX  --->  AWS RDS for Db2
+        CDC Replication
+```
+
+## During Stabilization Window
+```text
+Source Db2 <----> AWS RDS for Db2
+      Bi-Directional CDC
+```
+
+## If Migration Fails
+1. Stop application traffic to AWS RDS Db2.
+2. Allow reverse CDC synchronization to complete.
+3. Redirect application back to source Db2 on AIX.
+4. Resume production operations on source system.
+
+---
 
 ---
 
