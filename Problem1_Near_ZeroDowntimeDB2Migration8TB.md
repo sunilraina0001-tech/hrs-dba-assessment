@@ -194,7 +194,7 @@ flowchart TB
 3. Reduces manual dependency on infrastructure teams.
 4. Enables faster provisioning, consistency, auditability, and repeatable deployments.
 5. Supports quick DR rebuilds and environment scaling.
-
+```mermaid
 flowchart LR
 
 A[Developer Request] --> B[GitHub / GitLab]
@@ -211,7 +211,7 @@ I --> J[Production Ready]
 
 K[Note: AWS RDS Db2 does not support conventional Db2 HADR]
 K --> F
-
+```
 ## Automatic Failover
 During primary failure:
 1. AWS detects failure.
