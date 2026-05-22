@@ -188,6 +188,29 @@ flowchart TB
 - Automatic failover handled by AWS.
 - Application reconnects using same RDS endpoint.
 - No manual takeover commands required.
+## IaC-Based Automated Provisioning
+1. Use Terraform / AWS CloudFormation for automated AWS infrastructure provisioning.
+2. Integrate IaC with CI/CD pipeline for rapid and standardized Db2 environment setup.
+3. Reduces manual dependency on infrastructure teams.
+4. Enables faster provisioning, consistency, auditability, and repeatable deployments.
+5. Supports quick DR rebuilds and environment scaling.
+
+flowchart LR
+
+A[Developer Request] --> B[GitHub / GitLab]
+B --> C[CI/CD Pipeline]
+C --> D[Terraform / IaC Validation]
+D --> E[Automated AWS Provisioning]
+
+E --> F[AWS RDS Db2 Multi-AZ Primary]
+F --> G[Multi-AZ Standby Replica]
+F --> H[Read Replica / DR Replica]
+
+H --> I[DBA Validation & Approval]
+I --> J[Production Ready]
+
+K[Note: AWS RDS Db2 does not support conventional Db2 HADR]
+K --> F
 
 ## Automatic Failover
 During primary failure:
