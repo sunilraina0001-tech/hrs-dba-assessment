@@ -1,4 +1,4 @@
-# Problem 1 - Part 2: DBSTAT Data Warehouse Migration Strategy
+# Problem 1 - 1B: DBSTAT Data Warehouse Migration Strategy
 
 # Enterprise Data Warehouse Migration – 40TB DBSTAT Warehouse
 
