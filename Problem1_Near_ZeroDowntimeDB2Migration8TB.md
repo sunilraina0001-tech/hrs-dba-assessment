@@ -197,7 +197,7 @@ flowchart TB
 ```mermaid
 flowchart LR
 
-A[Developer Request] --> B[GitHub / GitLab]
+A[Provisioning Request] --> B[GitHub / GitLab]
 B --> C[CI/CD Pipeline]
 C --> D[Terraform / IaC Validation]
 D --> E[Automated AWS Provisioning]
@@ -206,7 +206,7 @@ E --> F[AWS RDS Db2 Multi-AZ Primary]
 F --> G[Multi-AZ Standby Replica]
 F --> H[Read Replica / DR Replica]
 
-H --> I[DBA Validation & Approval]
+H --> I[Secure all related Validation & Approval]
 I --> J[Production Ready]
 
 K[Note: AWS RDS Db2 does not support conventional Db2 HADR]
